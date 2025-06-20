@@ -1,70 +1,10 @@
-import { Webhook } from 'svix'
-import { WebhookEvent } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  return NextResponse.json({ message: "GET request successful. The route exists." });
+}
 
 export async function POST(req: Request) {
-  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
-  if (!WEBHOOK_SECRET) {
-    throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env')
-  }
-
-  const headers = req.headers;
-  const svix_id = headers.get("svix-id");
-  const svix_timestamp = headers.get("svix-timestamp");
-  const svix_signature = headers.get("svix-signature");
-
-  if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response('Error occured -- no svix headers', { status: 400 })
-  }
-
-  const payload = await req.json()
-  const body = JSON.stringify(payload);
-  const wh = new Webhook(WEBHOOK_SECRET);
-  let evt: WebhookEvent
-
-  try {
-    evt = wh.verify(body, {
-      "svix-id": svix_id,
-      "svix-timestamp": svix_timestamp,
-      "svix-signature": svix_signature,
-    }) as WebhookEvent
-  } catch (err) {
-    console.error('ERROR: Webhook verification failed:', err);
-    return new Response('Error occured', { status: 400 })
-  }
-  
-  const eventType = evt.type;
-  console.log(`hook received: ${eventType}`); 
-
-  try {
-    if (eventType === 'user.created') {
-      console.log("CREATING USER:", evt.data.id);
-      await prisma.user.create({
-        data: {
-          clerkId: evt.data.id,
-          username: evt.data.username!,
-          email: evt.data.email_addresses[0].email_address,
-          imageUrl: evt.data.image_url,
-        }
-      });
-    }
-
-    if (eventType === 'user.updated') {
-      console.log("UPDATING USER:", evt.data.id);
-      await prisma.user.update({
-        where: { clerkId: evt.data.id },
-        data: {
-          username: evt.data.username!,
-          imageUrl: evt.data.image_url,
-        }
-      });
-    }
-    
-  } catch(error) {
-    console.error("DATABASE ERROR:", error); 
-    return new NextResponse('Database error', { status: 500 });
-  }
-  
-  return new NextResponse(null, { status: 200 })
+  console.log("POST request to webhook was successful!");
+  return NextResponse.json({ message: "Webhook received by server!" }, { status: 200 });
 }
