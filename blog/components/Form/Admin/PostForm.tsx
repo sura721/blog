@@ -99,13 +99,25 @@ export default function PostForm() {
       <div>
         <label className="block text-sm font-medium text-muted-foreground mb-2">Post Image</label>
         {imageUrl ? (
-          <div className='relative w-full h-80 rounded-lg overflow-hidden border border-input'><Image src={imageUrl} alt="Uploaded Post Image" fill style={{objectFit: 'cover'}} /></div>
+          <div className='relative w-full h-80 rounded-lg overflow-hidden border border-input'>
+            <Image 
+              src={imageUrl} 
+              alt="Uploaded Post Image" 
+              fill 
+              style={{ objectFit: 'cover' }} // <-- THIS IS THE FIX FOR THE IMAGE
+            />
+          </div>
         ) : (
-          <UploadDropzone<OurFileRouter, 'postImage'> 
+          <UploadDropzone<OurFileRouter, 'postImage'>
             endpoint="postImage"
             onClientUploadComplete={(res) => { if (res?.[0]?.url) setImageUrl(res[0].url); }}
             onUploadError={(error: Error) => alert(`ERROR! ${error.message}`)}
-            appearance={{ container: "border-2 border-dashed border-input rounded-lg p-8", button: "bg-primary text-primary-foreground", }}
+            appearance={{ 
+              container: "border-2 border-dashed border-input rounded-lg p-8", 
+              button: "bg-primary text-primary-foreground",
+              label: "text-muted-foreground",
+              uploadIcon: "text-muted-foreground"
+            }}
           />
         )}
       </div>
