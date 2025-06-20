@@ -13,8 +13,8 @@ model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   username  String
   email     String   @unique
-  imageUrl  String?                        // Optional: Clerk profile image
-  clerkId   String   @unique              // Store Clerk user ID
+  imageUrl  String?                       
+  clerkId   String   @unique             
   isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
