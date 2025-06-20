@@ -1,4 +1,3 @@
-// /components/Form/Admin/PostForm.tsx
 'use client';
 
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
@@ -52,9 +51,7 @@ export default function PostForm() {
         const res = await fetch('/api/categories');
         const data = await res.json();
         setCategories(data);
-      } catch (error) {
-        console.error("Failed to fetch categories", error);
-      }
+      } catch (error) { console.error("Failed to fetch categories", error); }
     };
     fetchCategories();
   }, []);
@@ -63,14 +60,12 @@ export default function PostForm() {
     e.preventDefault();
     if (!categoryId) { alert("Please select a category."); return; }
     setIsSubmitting(true);
-    
     try {
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content, image: imageUrl, published, categoryId }),
       });
-
       if (!res.ok) throw new Error(await res.text());
       const post = await res.json();
       router.push(`/posts/${post.slug}`);
@@ -86,7 +81,7 @@ export default function PostForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-2">Title</label>
-          <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-3 border border-input rounded-lg bg-background focus:ring-2 focus:ring-ring" required />
+          <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full p-3 border border-input rounded-lg bg-background focus:ring-2 focus:ring-ring" required placeholder="e.g., How to Build a Great Blog" />
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-muted-foreground mb-2">Category</label>
@@ -99,12 +94,12 @@ export default function PostForm() {
       <div>
         <label className="block text-sm font-medium text-muted-foreground mb-2">Post Image</label>
         {imageUrl ? (
-          <div className='relative w-full h-80 rounded-lg overflow-hidden border border-input'>
+          <div className='relative aspect-video w-full rounded-lg overflow-hidden border border-input'>
             <Image 
               src={imageUrl} 
               alt="Uploaded Post Image" 
               fill 
-              style={{ objectFit: 'cover' }} // <-- THIS IS THE FIX FOR THE IMAGE
+              className="object-cover"
             />
           </div>
         ) : (
@@ -112,12 +107,7 @@ export default function PostForm() {
             endpoint="postImage"
             onClientUploadComplete={(res) => { if (res?.[0]?.url) setImageUrl(res[0].url); }}
             onUploadError={(error: Error) => alert(`ERROR! ${error.message}`)}
-            appearance={{ 
-              container: "border-2 border-dashed border-input rounded-lg p-8", 
-              button: "bg-primary text-primary-foreground",
-              label: "text-muted-foreground",
-              uploadIcon: "text-muted-foreground"
-            }}
+            appearance={{ container: "border-2 border-dashed border-input rounded-lg p-8", button: "bg-primary text-primary-foreground", }}
           />
         )}
       </div>
