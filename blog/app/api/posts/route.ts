@@ -1,86 +1,51 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+// /app/api/posts/route.ts
+import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
-    const { title, slug, content, authorId, categoryId, image, published } = await req.json()
-
-    const requiredFields = { title, slug, content, authorId, categoryId }
-    for (const [field, value] of Object.entries(requiredFields)) {
-      if (!value) {
-        return NextResponse.json(
-          {
-            error: `Missing required field: ${field}.`,
-            received: requiredFields,
-          },
-          { status: 400 }
-        )
-      }
+    const { userId } = await auth();
+    if (!userId) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const [authorExists, categoryExists] = await Promise.all([
-      prisma.user.findUnique({ where: { id: authorId } }),
-      prisma.category.findUnique({ where: { id: categoryId } }),
-    ])
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
 
-    if (!authorExists) {
-      return NextResponse.json(
-        {
-          error: 'Author not found with the provided authorId.',
-          authorId,
-        },
-        { status: 404 }
-      )
+    if (!user) {
+      return new NextResponse('User not found', { status: 404 });
     }
 
-    if (!categoryExists) {
-      return NextResponse.json(
-        {
-          error: 'Category not found with the provided categoryId.',
-          categoryId,
-        },
-        { status: 404 }
-      )
+    const body = await req.json();
+    const { title, content, image, published, categoryId } = body;
+
+    if (!title || !content || !categoryId) {
+      return new NextResponse('Missing required fields', { status: 400 });
     }
 
-    const newPost = await prisma.post.create({
+    let slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+    const existingPost = await prisma.post.findUnique({ where: { slug } });
+    if (existingPost) {
+      slug = `${slug}-${Date.now()}`;
+    }
+
+    const post = await prisma.post.create({
       data: {
         title,
-        slug,
         content,
-        authorId,
-        categoryId,
-        image: image || null,
+        slug,
+        image,
         published: published || false,
-        publishedAt: published ? new Date() : null,
+        authorId: user.id,
+        categoryId: categoryId,
       },
-    })
+    });
 
-    return NextResponse.json(newPost, { status: 201 })
-  } catch (err: any) {
-    console.error('POST /api/posts failed:', err)
-    const debugInfo = {
-      message: err.message,
-      code: err.code,
-      meta: err.meta,
-    }
-
-    if (err.code === 'P2002') {
-      return NextResponse.json(
-        {
-          error: 'A post with this slug already exists.',
-          debugInfo,
-        },
-        { status: 409 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        error: 'Failed to create post due to an internal server error.',
-        debugInfo,
-      },
-      { status: 500 }
-    )
+    return NextResponse.json(post, { status: 201 });
+  } catch (error) {
+    console.error('[POSTS_POST]', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
