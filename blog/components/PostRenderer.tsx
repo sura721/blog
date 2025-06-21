@@ -10,6 +10,7 @@ export default function PostRenderer({ post }: { post: PostWithAuthor }) {
     return null; 
   }
 
+  
   const authorName = post.author?.username || 'Anonymous';
   const authorImage = post.author?.imageUrl;
 
