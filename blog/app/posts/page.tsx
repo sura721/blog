@@ -2,7 +2,9 @@ import PostsGrid from '@/components/getAllPosts';
 import prisma from '@/lib/prisma';
 export default async function AllPostsPage() {
   const posts = await prisma.post.findMany({
-   
+      where: {
+      published: true,
+    },
     include: {
       author: true,
       category: true,
