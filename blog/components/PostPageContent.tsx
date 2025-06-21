@@ -13,6 +13,7 @@ export default async function PostPageContent({ slug }: { slug: string }) {
   });
 
   if (!post) {
+    
     notFound();
   }
 

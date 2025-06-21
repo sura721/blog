@@ -14,4 +14,5 @@ export default function SinglePostPage({ params }: { params: { slug: string } })
       <PostPageContent slug={params.slug} />
     </div>
   );
+  
 }
