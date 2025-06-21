@@ -1,18 +1,15 @@
-
-
 import PostPageContent from "@/components/PostPageContent";
 
-type Params ={
-  params:{
-    slug:string
-  }
+interface PageProps {
+  params: {
+    slug: string;
+  };
 }
-export default function SinglePostPage({ params }: { params: { slug: string } }) {
+
+export default function SinglePostPage({ params }: PageProps) {
   return (
     <div className="container mx-auto">
-      
       <PostPageContent slug={params.slug} />
     </div>
   );
-
 }
