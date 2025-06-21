@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { UploadDropzone } from "@uploadthing/react";
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
 import Image from "next/image";
-
+import { Progress } from "flowbite-react";
 interface Category {
   id: string;
   name: string;
@@ -87,6 +87,7 @@ const TiptapEditor = ({
   );
 };
 
+
 export default function PostForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -95,17 +96,22 @@ export default function PostForm() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+
   const router = useRouter();
-    console.log("PostForm component has rendered."); 
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await fetch("/api/categories");
+        if (!res.ok) throw new Error("Failed to fetch categories");
         const data = await res.json();
         setCategories(data);
       } catch (error) {
         console.error("Failed to fetch categories", error);
+        alert("Could not load categories. Please try refreshing the page.");
       }
     };
     fetchCategories();
@@ -134,7 +140,7 @@ export default function PostForm() {
       const post = await res.json();
       router.push(`/posts/${post.slug}`);
     } catch (error) {
-      alert("Something went wrong!");
+      alert("Something went wrong during post submission!");
     } finally {
       setIsSubmitting(false);
     }
@@ -142,6 +148,7 @@ export default function PostForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+      {/* Title and Category Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <label
@@ -185,26 +192,55 @@ export default function PostForm() {
           </select>
         </div>
       </div>
+
+      {/* --- Image Upload Section with Flowbite Progress --- */}
       <div>
         <label className="block text-sm font-medium text-muted-foreground mb-2">
           Post Image
         </label>
-        {imageUrl ? (
-          <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-input">
-            <Image
-              src={imageUrl}
-              alt="Uploaded Post Image"
-              fill
-              className="object-cover"
-            />
+        
+        {isUploading || imageUrl ? (
+          <div className="relative flex items-center justify-center aspect-video w-full rounded-lg overflow-hidden border border-input bg-muted/50">
+            {imageUrl && !isUploading ? (
+              <Image
+                key={imageUrl}
+                src={imageUrl}
+                alt="Uploaded Post Image"
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-32 h-32">
+                <Progress
+                  progress={uploadProgress}
+                  textLabel="Uploading..."
+                  size="xl"
+                  labelText
+                />
+              </div>
+            )}
           </div>
         ) : (
           <UploadDropzone<OurFileRouter, "postImage">
             endpoint="postImage"
-            onClientUploadComplete={(res) => {
-              if (res?.[0]?.ufsUrl) setImageUrl(res[0].ufsUrl);
+            onUploadBegin={() => {
+              setIsUploading(true);
             }}
-            onUploadError={(error: Error) => alert(`ERROR! ${error.message}`)}
+            onUploadProgress={(progress) => {
+              setUploadProgress(progress);
+            }}
+            onClientUploadComplete={(res) => {
+              if (res?.[0]?.ufsUrl) {
+                setImageUrl(res[0].ufsUrl);
+              }
+              setIsUploading(false);
+              setUploadProgress(0);
+            }}
+            onUploadError={(error: Error) => {
+              setIsUploading(false);
+              setUploadProgress(0);
+              alert(`ERROR! ${error.message}`);
+            }}
             appearance={{
               container: "border-2 border-dashed border-input rounded-lg p-8",
               button: "bg-primary text-primary-foreground",
@@ -212,6 +248,8 @@ export default function PostForm() {
           />
         )}
       </div>
+
+      {/* Content Editor */}
       <div>
         <label className="block text-sm font-medium text-muted-foreground mb-2">
           Content
@@ -221,6 +259,8 @@ export default function PostForm() {
           onChange={(richText) => setContent(richText)}
         />
       </div>
+
+      {/* Publish Checkbox */}
       <div className="flex items-center p-4 border border-input rounded-lg bg-card">
         <input
           type="checkbox"
@@ -236,12 +276,14 @@ export default function PostForm() {
           Publish this post immediately
         </label>
       </div>
+
+      {/* Submit Button */}
       <button
         type="submit"
-        disabled={isSubmitting || !title || !content || !categoryId}
+        disabled={isSubmitting || isUploading || !title || !content || !categoryId}
         className="w-full py-3 px-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-lg"
       >
-        {isSubmitting ? "Publishing..." : "Publish Post"}
+        {isSubmitting ? "Publishing..." : isUploading ? "Uploading Image..." : "Publish Post"}
       </button>
     </form>
   );
