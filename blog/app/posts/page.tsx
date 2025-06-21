@@ -1,5 +1,6 @@
 import PostsGrid from '@/components/getAllPosts';
 import prisma from '@/lib/prisma';
+export const dynamic = 'force-dynamic';
 export default async function AllPostsPage() {
   const posts = await prisma.post.findMany({
       where: {
