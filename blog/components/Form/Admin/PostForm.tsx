@@ -7,16 +7,30 @@ import { useRouter } from "next/navigation";
 import { UploadDropzone } from "@uploadthing/react";
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
 import Image from "next/image";
-import { Progress } from "flowbite-react";
+
+// --- SHADCN UI IMPORTS ---
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+// --- END SHADCN UI IMPORTS ---
+
 interface Category {
   id: string;
   name: string;
 }
 
 const Toolbar = ({ editor }: { editor: Editor | null }) => {
-  if (!editor) {
-    return null;
-  }
+  if (!editor) return null;
+  // Toolbar remains the same, it uses standard buttons and Tailwind classes
   return (
     <div className="border border-input bg-transparent rounded-t-lg p-2 flex items-center gap-1 tiptap">
       <button
@@ -71,8 +85,7 @@ const TiptapEditor = ({
     content: content,
     editorProps: {
       attributes: {
-        class:
-          "prose dark:prose-invert max-w-none focus:outline-none border-x border-b border-input bg-transparent rounded-b-lg p-4 min-h-[300px]",
+        class: "prose dark:prose-invert max-w-none focus:outline-none border-x border-b border-input bg-transparent rounded-b-lg p-4 min-h-[300px]",
       },
     },
     onUpdate({ editor }) {
@@ -87,7 +100,6 @@ const TiptapEditor = ({
   );
 };
 
-
 export default function PostForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -96,10 +108,8 @@ export default function PostForm() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-
   const router = useRouter();
 
   useEffect(() => {
@@ -128,18 +138,13 @@ export default function PostForm() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          content,
-          image: imageUrl,
-          published,
-          categoryId,
-        }),
+        body: JSON.stringify({ title, content, image: imageUrl, published, categoryId }),
       });
       if (!res.ok) throw new Error(await res.text());
       const post = await res.json();
       router.push(`/posts/${post.slug}`);
     } catch (error) {
+      console.error(error);
       alert("Something went wrong during post submission!");
     } finally {
       setIsSubmitting(false);
@@ -150,88 +155,54 @@ export default function PostForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
       {/* Title and Category Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-muted-foreground mb-2"
-          >
-            Title
-          </label>
-          <input
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="title">Title</Label>
+          <Input
             type="text"
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-input rounded-lg bg-background focus:ring-2 focus:ring-ring"
             required
             placeholder="e.g., How to Build a Great Blog"
           />
         </div>
-        <div>
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-muted-foreground mb-2"
-          >
-            Category
-          </label>
-          <select
-            id="category"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full p-3 border border-input rounded-lg bg-background focus:ring-2 focus:ring-ring"
-            required
-          >
-            <option value="" disabled>
-              Select a category
-            </option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="category">Category</Label>
+          <Select required value={categoryId} onValueChange={setCategoryId}>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-2">
-          Post Image
-        </label>
-        
+        <Label className="mb-2 block">Post Image</Label>
         {isUploading || imageUrl ? (
-          <div className="relative flex items-center justify-center aspect-video w-full rounded-lg overflow-hidden border border-input bg-muted/50">
+          <div className="relative flex flex-col items-center justify-center aspect-video w-full rounded-lg overflow-hidden border border-input bg-muted/50 p-4">
             {imageUrl && !isUploading ? (
-              <Image
-                key={imageUrl}
-                src={imageUrl}
-                alt="Uploaded Post Image"
-                fill
-                className="object-cover"
-              />
+              <Image src={imageUrl} alt="Uploaded Post Image" fill className="object-cover" />
             ) : (
-              <div className="w-32 h-32">
-                <Progress
-                  progress={uploadProgress}
-                  textLabel="Uploading..."
-                  size="xl"
-                  labelText
-                />
-              </div>
+              <>
+                <Progress value={uploadProgress} className="w-4/5" />
+                <p className="mt-2 text-sm text-muted-foreground">Uploading: {uploadProgress}%</p>
+              </>
             )}
           </div>
         ) : (
           <UploadDropzone<OurFileRouter, "postImage">
             endpoint="postImage"
-            onUploadBegin={() => {
-              setIsUploading(true);
-            }}
-            onUploadProgress={(progress) => {
-              setUploadProgress(progress);
-            }}
+            onUploadBegin={() => setIsUploading(true)}
+            onUploadProgress={setUploadProgress}
             onClientUploadComplete={(res) => {
-              if (res?.[0]?.ufsUrl) {
-                setImageUrl(res[0].ufsUrl);
-              }
+              if (res?.[0]?.url) setImageUrl(res[0].url); // Use `url` not `ufsUrl`
               setIsUploading(false);
               setUploadProgress(0);
             }}
@@ -248,42 +219,25 @@ export default function PostForm() {
         )}
       </div>
 
-      {/* Content Editor */}
       <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-2">
-          Content
-        </label>
-        <TiptapEditor
-          content={content}
-          onChange={(richText) => setContent(richText)}
-        />
+        <Label className="mb-2 block">Content</Label>
+        <TiptapEditor content={content} onChange={(richText) => setContent(richText)} />
       </div>
 
-      {/* Publish Checkbox */}
-      <div className="flex items-center p-4 border border-input rounded-lg bg-card">
-        <input
-          type="checkbox"
-          id="published"
-          checked={published}
-          onChange={(e) => setPublished(e.target.checked)}
-          className="h-5 w-5 rounded border-input text-primary focus:ring-ring"
-        />
-        <label
-          htmlFor="published"
-          className="ml-3 block text-sm font-medium text-card-foreground"
-        >
+      <div className="flex items-center space-x-2 p-4 border border-input rounded-lg bg-card">
+        <Checkbox id="published" checked={published} onCheckedChange={(checked) => setPublished(!!checked)} />
+        <Label htmlFor="published" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           Publish this post immediately
-        </label>
+        </Label>
       </div>
 
-      {/* Submit Button */}
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting || isUploading || !title || !content || !categoryId}
-        className="w-full py-3 px-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-lg"
+        size="lg"
       >
-        {isSubmitting ? "Publishing..." : isUploading ? "Uploading Image..." : "Publish Post"}
-      </button>
+        {isSubmitting ? "Publishing..." : isUploading ? "Uploading..." : "Publish Post"}
+      </Button>
     </form>
   );
 }

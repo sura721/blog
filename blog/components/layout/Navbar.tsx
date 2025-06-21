@@ -1,77 +1,109 @@
 "use client";
-import {
-  Button,
-  Navbar,
-  NavbarBrand,
-  NavbarCollapse,
-  NavbarLink,
-  NavbarToggle,
-  TextInput,
-} from "flowbite-react";
-import ThemeToggle from "../ui/toggler";
-import { UserButton } from "@clerk/nextjs";
-import { SignedIn } from "@clerk/clerk-react";
 
-const Input = () => {
-  return <TextInput placeholder="Search..." color="gray" className="w-full" />;
-};
+import { useState } from "react";
+import Link from "next/link";
+import { UserButton, SignedIn } from "@clerk/nextjs";
+import { Menu, X } from "lucide-react"; 
+
+import { Button } from "@/components/ui/button"; 
+import { Input } from "@/components/ui/input";   
+import ThemeToggle from "../ui/toggler";
 
 export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const navLinks = [
+    { href: "#", label: "About" },
+    { href: "#", label: "Services" },
+    { href: "#", label: "Contact" },
+  ];
+
   return (
-    <Navbar fluid rounded className="border-b px-2 sm:px-4">
-      {/* Left-side Logo */}
-      <NavbarBrand href="/" className="mr-3 flex-shrink-0">
-        {/* Mobile Logo: "sb" */}
-        <span className="block self-center whitespace-nowrap rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 text-base font-semibold text-white md:hidden">
-          sb
-        </span>
-        {/* Desktop Logo: "sura's blog" */}
-        <span className="hidden items-center gap-2 md:flex">
-          <span className="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 text-xl text-white">
-            sura
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
+        {/* Left: Logo */}
+        <Link href="/" className="mr-4 flex items-center">
+          <span className="inline-block self-center whitespace-nowrap rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1.5 text-base font-semibold text-white md:hidden">
+            sb
           </span>
-          <span className="text-xl font-bold text-shadow-white">'s blog</span>
-        </span>
-      </NavbarBrand>
+          <span className="hidden items-center gap-2 md:flex">
+            <span className="rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 text-xl text-white">
+              sura
+            </span>
+            <span className="text-xl font-bold">'s blog</span>
+          </span>
+        </Link>
 
-      {/* Search Bar (takes up remaining space) */}
-      <div className="flex-1 mr-2">
-        <Input />
-      </div>
-
-      {/* Right-side Icons */}
-      <div className="ml-3 flex items-center gap-3 md:order-2">
-        <div className="hidden md:flex">
-          <ThemeToggle />
-        </div>
-        <div className="hidden md:flex">
-          <SignedIn>
-            <UserButton/>
-          </SignedIn>
-        </div>
-        <NavbarToggle />
-      </div>
-
-      {/* Collapsible Menu Content */}
-      <NavbarCollapse>
-        <NavbarLink href="#">About</NavbarLink>
-        <NavbarLink href="#">Services</NavbarLink>
-        <NavbarLink href="#">Contact</NavbarLink>
-
-        {/* Mobile-only section for UserButton and ThemeToggle */}
-        <div className="mt-4 flex flex-col gap-4 border-t border-gray-200 pt-4 dark:border-gray-700 md:hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Theme</span>
-            <ThemeToggle />
+        {/* Center: Search Bar (Desktop) */}
+        <div className="hidden flex-1 md:flex md:justify-center">
+          <div className="w-full max-w-sm">
+            <Input placeholder="Search..." className="w-full" />
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Profile</span>
+        </div>
+
+        {/* Right: Desktop Nav & Icons */}
+        <div className="hidden items-center gap-4 md:flex">
+          <nav className="flex items-center gap-6 text-sm">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <SignedIn>
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
           </div>
         </div>
-      </NavbarCollapse>
-    </Navbar>
+
+        {/* Mobile Menu Toggle */}
+        <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                <span className="sr-only">Toggle menu</span>
+            </Button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="container py-4 md:hidden">
+           {/* Mobile Search */}
+          <div className="mb-4">
+            <Input placeholder="Search..." className="w-full" />
+          </div>
+          {/* Mobile Nav Links */}
+          <nav className="flex flex-col gap-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="font-medium text-muted-foreground"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          {/* Mobile Profile */}
+          <div className="mt-4 border-t pt-4">
+             <SignedIn>
+              <UserButton afterSignOutUrl="/" showName />
+            </SignedIn>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }
