@@ -1,11 +1,12 @@
 "use client";
 
+import PostPageContent from "@/components/PostPageContent";
+
 type Params ={
   params:{
     slug:string
   }
 }
-import PostPageContent from './PostPageContent'; 
 export default function SinglePostPage({ params }: { params: { slug: string } }) {
   return (
     <div className="container mx-auto">

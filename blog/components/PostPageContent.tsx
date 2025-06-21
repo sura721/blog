@@ -1,8 +1,7 @@
 import prisma from '@/lib/prisma';
-import PostRenderer from '@/components/PostRenderer';
 import { notFound } from 'next/navigation';
+import PostRenderer from './PostRenderer';
 
-// This is an async Server Component
 export default async function PostPageContent({ slug }: { slug: string }) {
   const post = await prisma.post.findUnique({
     where: {
