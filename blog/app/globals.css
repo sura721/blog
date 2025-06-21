@@ -1,10 +1,11 @@
 @import "tailwindcss";
-@plugin "flowbite-react/plugin/tailwindcss";
-@source "../.flowbite-react/class-list.json";
+
+@plugin "flowbite-react/plugin";
 
 @import "uploadthing/tw/v4";
-@source "../node_modules/@uploadthing/react/dist"; 
+@source "../node_modules/@uploadthing/react/dist";
+
 .tiptap button.is-active {
-  background-color: #3b82f6; 
+  background-color: #3b82f6;
   color: white;
 }
