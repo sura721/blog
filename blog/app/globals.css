@@ -1,7 +1,13 @@
+/* /app/globals.css */
 
+/* This is the core of Tailwind v4 */
 @import "tailwindcss";
 
-@import "flowbite-react/tailwind.css";
+/* 
+  This is the correct syntax for the Flowbite v4 plugin.
+  It's a special rule, not a standard CSS import.
+*/
+@plugin "flowbite-react/plugin";
 
 @import "uploadthing/tw/v4";
 @source "../node_modules/@uploadthing/react/dist";
