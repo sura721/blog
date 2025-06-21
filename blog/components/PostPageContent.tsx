@@ -11,6 +11,7 @@ export default async function PostPageContent({ slug }: { slug: string }) {
       author: true,
     },
   });
+  
 
   if (!post) {
     

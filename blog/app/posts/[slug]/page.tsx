@@ -6,6 +6,7 @@ type Params ={
   params:{
     slug:string
   }
+  
 }
 export default function SinglePostPage({ params }: { params: { slug: string } }) {
   return (
