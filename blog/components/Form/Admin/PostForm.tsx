@@ -202,7 +202,7 @@ export default function PostForm() {
           <UploadDropzone<OurFileRouter, "postImage">
             endpoint="postImage"
             onClientUploadComplete={(res) => {
-              if (res?.[0]?.url) setImageUrl(res[0].url);
+              if (res?.[0]?.ufsUrl) setImageUrl(res[0].ufsUrl);
             }}
             onUploadError={(error: Error) => alert(`ERROR! ${error.message}`)}
             appearance={{
