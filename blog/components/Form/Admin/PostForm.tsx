@@ -193,7 +193,6 @@ export default function PostForm() {
         </div>
       </div>
 
-      {/* --- Image Upload Section with Flowbite Progress --- */}
       <div>
         <label className="block text-sm font-medium text-muted-foreground mb-2">
           Post Image
