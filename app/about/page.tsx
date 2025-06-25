@@ -4,7 +4,7 @@ export default function AboutPage() {
       <h1 className="text-4xl font-bold text-foreground mb-6">About Me</h1>
 
       <p className="text-muted-foreground mb-6 leading-relaxed">
-        I&apos;m a passionate full-stack web developer based in Ethiopia, currently studying Computer Science at Admas Science and Technology University.
+        I&apos;m a passionate full-stack web developer based in Ethiopia, currently studying Computer Science at Adama Science and Technology University.
         I specialize in building fast, modern web apps with technologies like React, Next.js, TailwindCSS, and Prisma.
       </p>
 
