@@ -245,7 +245,7 @@ export function IntroPageClient({ featuredPosts }: IntroPageClientProps) {
           Template Showcase Area
         </h3>
         <Button asChild className="mt-6">
-          <Link href="/templates">Browse Templates</Link>
+          <Link href="https://lottiefiles.com/" target="blank">Browse Templates</Link>
         </Button>
       </div>
     </motion.div>
