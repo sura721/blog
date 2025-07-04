@@ -22,6 +22,6 @@ A modern full-stack **blog platform** built with cutting-edge web technologies. 
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/yourusername/your-blog-repo.git
+git clone https://github.com/sura721/blog.git
 cd your-blog-repo
 npm install
